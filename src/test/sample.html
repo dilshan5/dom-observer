@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>JS Bin</title>
+    <script src="../../src/js-mutation-observer.js"></script>
+
+</head>
+<body>
+<article>
+    <p>See the console for information about what is going on.</p>
+    <div id="container"></div>
+    <div>
+        <button onclick="addNode();">Add node</button>
+        <button onclick="setAttr();">Add attribute</button>
+        <button onclick="setContent();">Change content</button>
+        <button onclick="removeNod();">Remove node</button>
+
+    </div>
+</article>
+</body>
+
+<script>
+    /*
+* Adapted from http://www.michielvaneerd.nl/lab/mutationobserver/
+*/
+var container = document.getElementById("container");
+
+var addNode = function() {
+  if (container.hasChildNodes()) {
+    alert("Node already added...");
+    return;
+  }
+  var div = document.createElement("div");
+  div.innerHTML = "<h1 title='The header'><span>Added node</span></h1>";
+  container.appendChild(div);
+};
+
+var removeNod = function() {
+  if (!container.hasChildNodes()) {
+    alert("There is no node...");
+    return;
+  }
+  container.removeChild(container.firstChild);
+};
+
+var setAttr = function() {
+  if (!container.hasChildNodes()) {
+    alert("There is no node...");
+    return;
+  }
+  container.firstChild.querySelector("h1").setAttribute("title", "I am changed!");
+};
+
+var setContent = function() {
+  if (!container.hasChildNodes()) {
+    alert("There is no node...");
+    return;
+  }
+  container.firstChild.querySelector("span").firstChild.data = "Someone changed me...";
+};
+
+if ("JsMutationObserver" in window) {
+  var observer = new JsMutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      var target = mutation.target;
+      switch (mutation.type) {
+        case "attributes":
+          console.log("The attribute " + mutation.attributeName
+            + " of the node " + target.nodeName
+            + " changed from '" + mutation.oldValue + "'"
+            + " to '" + target.getAttribute(mutation.attributeName) + "'");
+        break;
+        case "childList":
+          Array.prototype.forEach.call(mutation.addedNodes, function(node) {
+            console.log("Node " + node.nodeName + " added to " + target.nodeName);
+          });
+          Array.prototype.forEach.call(mutation.removedNodes, function(node) {
+            console.log("Node " + node.nodeName + " removed from " + target.nodeName);
+          });
+        break;
+        case "characterData":
+          console.log("Content of " + target.nodeName + " changed from the node '" + mutation.oldValue + "' to '" + target.data + "'");
+        break;
+      }
+    });
+  });
+  observer.observe(container, {
+    childList : true,
+    attributes : true,
+    characterData : true,
+    subtree : true,
+    attributeOldValue : true,
+    characterDataOldValue : true
+  });
+}
+
+
+
+</script>
+</html>
