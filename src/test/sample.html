@@ -2,19 +2,22 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>JS Bin</title>
-    <script src="../../src/js-mutation-observer.js"></script>
+    <title>DOMObserver Test by Dilshan</title>
+    <script src="../../src/dom-observer.js"></script>
 
 </head>
 <body>
 <article>
-    <p>See the console for information about what is going on.</p>
+    <div>
+        <img id="bannerImg" src="automated_testing.jpg">
+        <p>Welcome to DOMObserver Demonstration</p>
+    </div>
     <div id="container"></div>
     <div>
-        <button onclick="addNode();">Add node</button>
-        <button onclick="setAttr();">Add attribute</button>
-        <button onclick="setContent();">Change content</button>
-        <button onclick="removeNod();">Remove node</button>
+        <button id="addNodeBtn" onclick="addNode();">Add node</button>
+        <button id="setAttrBtn" onclick="setAttr();">Add attribute</button>
+        <button id="setContentBtn" onclick="setContent();">Change content</button>
+        <button id="removeNodBtn" onclick="removeNod();">Remove node</button>
 
     </div>
 </article>
@@ -60,8 +63,9 @@ var setContent = function() {
   container.firstChild.querySelector("span").firstChild.data = "Someone changed me...";
 };
 
-if ("JsMutationObserver" in window) {
-  var observer = new JsMutationObserver(function(mutations) {
+if ("DOMObserver" in window) {
+// Create an observer object and assign a callback function
+  var observer = new DOMObserver(function(mutations) {
     mutations.forEach(function(mutation) {
       var target = mutation.target;
       switch (mutation.type) {
@@ -85,7 +89,8 @@ if ("JsMutationObserver" in window) {
       }
     });
   });
-  observer.observe(container, {
+  // Register the target node to observe and specify which DOM changes to watch
+  observer.observe(document, {
     childList : true,
     attributes : true,
     characterData : true,
