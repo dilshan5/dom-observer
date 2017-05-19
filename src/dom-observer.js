@@ -61,8 +61,15 @@ if (typeof WeakMap === "undefined") {
       window.postMessage(sentinel, "*");
     };
   }
+    // This is used to ensure that we never schedule 2 callas to setImmediate
   var isScheduled = false;
+    // Keep track of observers that needs to be notified next time.
   var scheduledObservers = [];
+
+  /**
+   * Schedules |dispatchCallback| to be called in the future.
+   * @param {MutationObserver} observer
+   */
   function scheduleCallback(observer) {
     scheduledObservers.push(observer);
     if (!isScheduled) {
@@ -83,13 +90,17 @@ if (typeof WeakMap === "undefined") {
     });
     var anyNonEmpty = false;
     observers.forEach(function(observer) {
+    //queue be a copy of mo’s record queue.
       var queue = observer.takeRecords();
+      //Remove all transient registered observers whose observer is mo.
       removeTransientObserversFor(observer);
       if (queue.length) {
         observer.callback_(queue, observer);
         anyNonEmpty = true;
       }
     });
+    //If queue is non-empty, invoke mo’s callback with a list of arguments
+    //consisting of queue and mo, and mo as the callback this value.
     if (anyNonEmpty) dispatchCallbacks();
   }
   function removeTransientObserversFor(observer) {
@@ -105,28 +116,33 @@ if (typeof WeakMap === "undefined") {
   /**
    * This function is used for the "For each registered observer observer (with
    * observer's options as options) in target's list of registered observers,
-   * run these substeps:" and the "For each ancestor ancestor of target, and for
-   * each registered observer observer (with options options) in ancestor's list
-   * of registered observers, run these substeps:" part of the algorithms. The
-   * |options.subtree| is checked to ensure that the callback is called
-   * correctly.
+   * run these substeps:" and the For each ancestor of node, if ancestor has any
+   *  registered observers whose options's subtree is true,
+   *  hen for each such registered observer registered,
+   *  append a transient registered observer whose observer and options are identical
+   *  to those of registered and source which is registered to node's list of registered observers.
    *
    * @param {Node} target
    * @param {function(MutationObserverInit):MutationRecord} callback
    */
   function forEachAncestorAndObserverEnqueueRecord(target, type, callback) {
     for (var node = target; node; node = node.parentNode) {
+    //node => inclusive ancestors of the target.
       var registrations = registrationsTable.get(node);
       if (registrations) {
         for (var j = 0; j < registrations.length; j++) {
           var registration = registrations[j];
           var options = registration.options;
+          //6a
           if (node !== target && !options.subtree)
             continue;
+          //6b
           if (type == "attributes" && !options.attributes)
             continue;
+          //6c
           if (type == "characterData" && !options.characterData)
             continue;
+          //6d
           if (type == "childList" && !options.childList)
             continue;
           var record = callback(options);
@@ -138,7 +154,7 @@ if (typeof WeakMap === "undefined") {
   }
   var uidCounter = 0;
 
-    /**
+    /** 1a
      * The class that maps to the DOMObserver interface.
      * @param {Function} callback.
      * @constructor
@@ -153,31 +169,37 @@ if (typeof WeakMap === "undefined") {
   constructor: DOMObserver,
     observe: function(target, options) {
       target = wrapIfNeeded(target);
-      //1.1
+      if(!options.subtree)
+
+      //2a
       if((options.attributeOldValue || options.attributeFilter) && !options.attributes ){
         options.attributes = true;
       }
-      //1.2
+      //2b
       if(options.characterDataOldValue && !options.characterData){
         options.characterData = true;
       }
-      // 1.3
+      // 2c
       if (!options.childList && !options.attributes && !options.characterData ||
-              // 1.4
+              // 2d
               options.attributeOldValue && !options.attributes ||
-              // 1.5
+              // 2e
               options.attributeFilter && options.attributeFilter.length && !options.attributes ||
-              // 1.6
+              // 2f
               options.characterDataOldValue && !options.characterData ||
-
-               options.attributes && !options.subtree) {
+              // 2g
+              options.attributes && !options.subtree ||
+              // 2h
+              !options.subtree) {
 
                  throw new TypeError();
             }
       var registrations = registrationsTable.get(target);
-      if (!registrations) registrationsTable.set(target, registrations = []);
+      if (!registrations)
+        registrationsTable.set(target, registrations = []);
 
-      // If target's list of registered observers already includes a registered
+      // 3
+      //If target's list of registered observers already includes a registered
       // observer associated with the context object, replace that registered
       // observer's options with options.
       var registration;
@@ -189,7 +211,8 @@ if (typeof WeakMap === "undefined") {
           break;
         }
       }
-      // Otherwise, add a new registered observer to target's list of registered
+      // 4
+      //Otherwise, add a new registered observer to target's list of registered
       // observers with the context object as the observer and options as the
       // options, and add target to context object's list of nodes on which it
       // is registered.
@@ -206,6 +229,7 @@ if (typeof WeakMap === "undefined") {
         for (var i = 0; i < registrations.length; i++) {
           var registration = registrations[i];
           if (registration.observer === this) {
+          //remove any registered observer on node for which the context object is the observer
             registration.removeListeners();
             registrations.splice(i, 1);
             // Each node can only have one registered observer associated with
@@ -214,9 +238,11 @@ if (typeof WeakMap === "undefined") {
           }
         }
       }, this);
+      //empty context object's record queue
       this.records_ = [];
     },
     takeRecords: function() {
+    //return a copy of the record queue and then empty the record queue
       var copyOfRecords = this.records_;
       this.records_ = [];
       return copyOfRecords;
@@ -323,6 +349,7 @@ if (typeof WeakMap === "undefined") {
   }
   Registration.prototype = {
     enqueue: function(record) {
+    //A list of nodes on which it is a registered observer's observer that is initially empty.
       var records = this.observer.records_;
       var length = records.length;
 
@@ -345,6 +372,8 @@ if (typeof WeakMap === "undefined") {
     addListeners: function() {
       this.addListeners_(this.target);
     },
+
+    // 5
     addListeners_: function(node) {
       var options = this.options;
       //https://www.w3.org/TR/2003/NOTE-DOM-Level-3-Events-20031107/DOM3-Events.html
@@ -451,10 +480,12 @@ if (typeof WeakMap === "undefined") {
 
        case "DOMNodeRemoved":
         this.addTransientObserver(e.target);
-
+        /*  queue a mutation record of "childList" for parent with removedNodes a list solely containing node,
+        nextSibling node's next sibling, and previousSibling,oldPreviousSibling.*/
        case "DOMNodeInserted":
         var changedNode = e.target;
-        var addedNodes, removedNodes;
+        var addedNodes;
+        var removedNodes;
         if (e.type === "DOMNodeInserted") {
           addedNodes = [ changedNode ];
           removedNodes = [];
@@ -475,6 +506,7 @@ if (typeof WeakMap === "undefined") {
           return record;
         });
       }
+      //Empty mo’s record queue.
       clearRecords();
     }
   };

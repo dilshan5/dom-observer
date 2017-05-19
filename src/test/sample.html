@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
     <title>DOMObserver Test by Dilshan</title>
     <script src="../../src/dom-observer.js"></script>
-
 </head>
 <body>
 <article>
@@ -18,16 +16,15 @@
         <button id="setAttrBtn" onclick="setAttr();">Add attribute</button>
         <button id="setContentBtn" onclick="setContent();">Change content</button>
         <button id="removeNodBtn" onclick="removeNod();">Remove node</button>
-
     </div>
 </article>
 </body>
-
 <script>
     /*
 * Adapted from http://www.michielvaneerd.nl/lab/mutationobserver/
 */
 var container = document.getElementById("container");
+var img = document.getElementById("bannerImg");
 
 var addNode = function() {
   if (container.hasChildNodes()) {
@@ -36,15 +33,12 @@ var addNode = function() {
   }
   var div = document.createElement("div");
   div.innerHTML = "<h1 title='The header'><span>Added node</span></h1>";
+  div.setAttribute("id","newlyAdded");
   container.appendChild(div);
 };
 
 var removeNod = function() {
-  if (!container.hasChildNodes()) {
-    alert("There is no node...");
-    return;
-  }
-  container.removeChild(container.firstChild);
+ img.remove(img);
 };
 
 var setAttr = function() {
@@ -77,9 +71,23 @@ if ("DOMObserver" in window) {
         break;
         case "childList":
           Array.prototype.forEach.call(mutation.addedNodes, function(node) {
-            console.log("Node " + node.nodeName + " added to " + target.nodeName);
+          if (!node.id == "")
+            console.log("Attribute ID " + "'"+ node.id +"'" + " was added to " + target.nodeName);
+          else if (!node.className == "")
+            console.log("Attribute className " + "'"+ node.className +"'" + " was added to " + target.nodeName);
+          else if (!node.innerText == "")
+            console.log("Attribute Text " + "'"+ node.innerText +"'" + " was added to " + target.nodeName);
+          else
+            console.log("Node " + node.nodeName + " was added to " + target.nodeName);
           });
           Array.prototype.forEach.call(mutation.removedNodes, function(node) {
+          if (!node.id == "")
+            console.log("Attribute ID " + "'"+ node.id +"'" + " was removed from " + target.nodeName);
+          else if (!node.className == "")
+            console.log("Attribute className " + "'"+ node.className +"'" + " was removed from " + target.nodeName);
+          else if (!node.innerText == "")
+            console.log("Attribute Text " + "'"+ node.innerText +"'" + " was removed from " + target.nodeName);
+          else
             console.log("Node " + node.nodeName + " removed from " + target.nodeName);
           });
         break;
