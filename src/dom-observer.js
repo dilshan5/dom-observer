@@ -90,7 +90,7 @@ if (typeof WeakMap === "undefined") {
     });
     var anyNonEmpty = false;
     observers.forEach(function(observer) {
-    //queue be a copy of mo’s record queue.
+    // queue be a copy of mo’s record queue.
       var queue = observer.takeRecords();
       //Remove all transient registered observers whose observer is mo.
       removeTransientObserversFor(observer);
@@ -133,16 +133,16 @@ if (typeof WeakMap === "undefined") {
         for (var j = 0; j < registrations.length; j++) {
           var registration = registrations[j];
           var options = registration.options;
-          //6a
+          //6ii a
           if (node !== target && !options.subtree)
             continue;
-          //6b
+          //6ii b
           if (type == "attributes" && !options.attributes)
             continue;
-          //6c
+          //6ii c
           if (type == "characterData" && !options.characterData)
             continue;
-          //6d
+          //6ii d
           if (type == "childList" && !options.childList)
             continue;
           var record = callback(options);
@@ -255,15 +255,15 @@ if (typeof WeakMap === "undefined") {
    * @constructor
    */
   function MutationRecord(type, target) {
-    this.type = type;
-    this.target = target;
-    this.addedNodes = [];
-    this.removedNodes = [];
-    this.previousSibling = null;
-    this.nextSibling = null;
-    this.attributeName = null;
-    this.attributeNamespace = null;
-    this.oldValue = null;
+    this.type = type;//Returns attributes if the mutation was an attribute mutation, characterData if it was a mutation to a CharacterData node, and childList if it was a mutation to the tree of nodes.
+    this.target = target;//Returns the node the mutation affected, depending on the type. For attributes, it is the element whose attribute changed.
+    this.addedNodes = []; //Return the nodes added. Will be an empty NodeList if no nodes were added.
+    this.removedNodes = []; //Return the nodes removed. Will be an empty NodeList if no nodes were removed.
+    this.previousSibling = null; //Return the previous sibling of the added or removed nodes, or null.
+    this.nextSibling = null; //Return the next sibling of the added or removed nodes, or null.
+    this.attributeName = null; //Returns the local name of the changed attribute, or null.
+    this.attributeNamespace = null; //Returns the namespace of the changed attribute, or null.
+    this.oldValue = null; //The return value depends on the type.
   }
   function copyMutationRecord(original) {
     var record = new MutationRecord(original.type, original.target);
@@ -378,26 +378,26 @@ if (typeof WeakMap === "undefined") {
       var options = this.options;
       //https://www.w3.org/TR/2003/NOTE-DOM-Level-3-Events-20031107/DOM3-Events.html
       //element.addEventListener(event, function, true-capturing/false-bubbling)
-      if (options.characterData) node.addEventListener("DOMCharacterDataModified", this, true);
-      if (options.childList) node.addEventListener("DOMNodeInserted", this, true);
-      if (options.attributes) node.addEventListener("DOMAttrModified", this, true);
-      if (options.attributeOldValue) node.addEventListener("DOMAttributeNameChanged", this, true);
-      if (options.characterDataOldValue) node.addEventListener("DOMElementNameChanged", this, true);
-      if (options.subtree) node.addEventListener("DOMSubtreeModified", this, true);
-      if (options.childList || options.subtree) node.addEventListener("DOMNodeRemoved", this, true);
+      if (options.characterData) node.addEventListener("DOMCharacterDataModified", this, {capture: true});
+      if (options.childList) node.addEventListener("DOMNodeInserted", this, {capture: false});
+      if (options.attributes) node.addEventListener("DOMAttrModified", this, {capture: true});
+      if (options.attributeOldValue) node.addEventListener("DOMAttributeNameChanged", this, {capture: true});
+      if (options.characterDataOldValue) node.addEventListener("DOMElementNameChanged", this, {capture: true});
+      if (options.subtree) node.addEventListener("DOMSubtreeModified", this, {capture: true});
+      if (options.childList || options.subtree) node.addEventListener("DOMNodeRemoved", this, {capture: true});
     },
     removeListeners: function() {
       this.removeListeners_(this.target);
     },
     removeListeners_: function(node) {
       var options = this.options;
-      if (options.attributes) node.removeEventListener("DOMAttrModified", this, true);
-      if (options.characterData) node.removeEventListener("DOMCharacterDataModified", this, true);
-      if (options.childList) node.removeEventListener("DOMNodeInserted", this, true);
-      if (options.attributeOldValue) node.removeEventListener("DOMAttributeNameChanged", this, true);
-      if (options.characterDataOldValue) node.removeEventListener("DOMElementNameChanged", this, true);
-      if (options.subtree) node.removeEventListener("DOMSubtreeModified", this, true);
-      if (options.childList || options.subtree) node.removeEventListener("DOMNodeRemoved", this, true);
+      if (options.attributes) node.removeEventListener("DOMAttrModified", this, {capture: true});
+      if (options.characterData) node.removeEventListener("DOMCharacterDataModified", this, {capture: true});
+      if (options.childList) node.removeEventListener("DOMNodeInserted", this, {capture: true});
+      if (options.attributeOldValue) node.removeEventListener("DOMAttributeNameChanged", this, {capture: true});
+      if (options.characterDataOldValue) node.removeEventListener("DOMElementNameChanged", this, {capture: true});
+      if (options.subtree) node.removeEventListener("DOMSubtreeModified", this, {capture: true});
+      if (options.childList || options.subtree) node.removeEventListener("DOMNodeRemoved", this, {capture: true});
     },
 
     /**

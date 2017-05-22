@@ -1,2 +1,4 @@
 # Igonre List
 *.idea/
+src/main/
+src/test/java/
