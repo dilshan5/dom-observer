@@ -74,6 +74,9 @@ if (typeof WeakMap === "undefined") {
     scheduledObservers.push(observer);
     if (!isScheduled) {
       isScheduled = true;
+      //setImmediate - callbacks are called after I/O Queue callbacks are finished or timed out
+      //setTimeout(fn, 0) callbacks are placed in Timer Queue and will be called after I/O callbacks
+      // as well as Check Queue callbacks
       setImmediate(dispatchCallbacks);
     }
   }
@@ -101,7 +104,8 @@ if (typeof WeakMap === "undefined") {
     });
     //If queue is non-empty, invoke mo’s callback with a list of arguments
     //consisting of queue and mo, and mo as the callback this value.
-    if (anyNonEmpty) dispatchCallbacks();
+    if (anyNonEmpty)
+      dispatchCallbacks();
   }
   function removeTransientObserversFor(observer) {
     observer.nodes_.forEach(function(node) {
