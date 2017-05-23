@@ -20,9 +20,7 @@
 </article>
 </body>
 <script>
-    /*
-* Adapted from http://www.michielvaneerd.nl/lab/mutationobserver/
-*/
+
 var container = document.getElementById("container");
 var img = document.getElementById("bannerImg");
 
@@ -38,7 +36,12 @@ var addNode = function() {
 };
 
 var removeNod = function() {
- img.remove(img);
+  if (!container.hasChildNodes()) {
+    alert("There is no node...");
+    return;
+  }
+  container.removeChild(container.firstChild);
+  img.remove(img);
 };
 
 var setAttr = function() {

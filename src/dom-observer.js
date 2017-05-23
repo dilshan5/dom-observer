@@ -321,7 +321,6 @@ if (typeof WeakMap === "undefined") {
    *
    * @param {MutationRecord} lastRecord
    * @param {MutationRecord} newRecord
-   * @param {MutationRecord}
    */
   function selectRecord(lastRecord, newRecord) {
     if (lastRecord === newRecord)
