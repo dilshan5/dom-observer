@@ -8,6 +8,7 @@
 <article>
     <div>
         <img id="bannerImg" src="automated_testing.jpg">
+
         <p>Welcome to DOMObserver Demonstration</p>
     </div>
     <div id="container"></div>
@@ -21,97 +22,126 @@
 </body>
 <script>
 
-var container = document.getElementById("container");
-var img = document.getElementById("bannerImg");
+    var container = document.getElementById("container");
+    var img = document.getElementById("bannerImg");
 
-var addNode = function() {
-  if (container.hasChildNodes()) {
-    alert("Node already added...");
-    return;
-  }
-  var div = document.createElement("div");
-  div.innerHTML = "<h1 title='The header'><span>Added node</span></h1>";
-  div.setAttribute("id","newlyAdded");
-  container.appendChild(div);
-};
+    var addNode = function () {
+        if (container.hasChildNodes()) {
+            alert("Node already added...");
+            return;
+        }
+        var div = document.createElement("div");
+        div.innerHTML = "<h1 title='The header'><span>Added node</span></h1>";
+        div.setAttribute("id", "newlyAdded");
+        container.appendChild(div);
+    };
 
-var removeNod = function() {
-  if (!container.hasChildNodes()) {
-    alert("There is no node...");
-    return;
-  }
-  container.removeChild(container.firstChild);
-  img.remove(img);
-};
+    var removeNod = function () {
+        if (!container.hasChildNodes()) {
+            alert("There is no node...");
+            return;
+        }
+        container.removeChild(container.firstChild);
+        img.remove(img);
+    };
 
-var setAttr = function() {
-  if (!container.hasChildNodes()) {
-    alert("There is no node...");
-    return;
-  }
-  container.firstChild.querySelector("h1").setAttribute("title", "I am changed!");
-};
+    var setAttr = function () {
+        if (!container.hasChildNodes()) {
+            alert("There is no node...");
+            return;
+        }
+        container.firstChild.querySelector("h1").setAttribute("title", "I am changed!");
+    };
 
-var setContent = function() {
-  if (!container.hasChildNodes()) {
-    alert("There is no node...");
-    return;
-  }
-  container.firstChild.querySelector("span").firstChild.data = "Someone changed me...";
-};
+    var setContent = function () {
+        if (!container.hasChildNodes()) {
+            alert("There is no node...");
+            return;
+        }
+        container.firstChild.querySelector("span").firstChild.data = "Someone changed me...";
+    };
 
-if ("DOMObserver" in window) {
+    if ("DOMObserver" in window) {
 // Create an observer object and assign a callback function
-  var observer = new DOMObserver(function(mutations) {
-    mutations.forEach(function(mutation) {
-      var target = mutation.target;
-      switch (mutation.type) {
-        case "attributes":
-          console.log("The attribute " + mutation.attributeName
-            + " of the node " + target.nodeName
-            + " changed from '" + mutation.oldValue + "'"
-            + " to '" + target.getAttribute(mutation.attributeName) + "'");
-        break;
-        case "childList":
-          Array.prototype.forEach.call(mutation.addedNodes, function(node) {
-          if (!node.id == "")
-            console.log("Attribute ID " + "'"+ node.id +"'" + " was added to " + target.nodeName);
-          else if (!node.className == "")
-            console.log("Attribute className " + "'"+ node.className +"'" + " was added to " + target.nodeName);
-          else if (!node.innerText == "")
-            console.log("Attribute Text " + "'"+ node.innerText +"'" + " was added to " + target.nodeName);
-          else
-            console.log("Node " + node.nodeName + " was added to " + target.nodeName);
-          });
-          Array.prototype.forEach.call(mutation.removedNodes, function(node) {
-          if (!node.id == "")
-            console.log("Attribute ID " + "'"+ node.id +"'" + " was removed from " + target.nodeName);
-          else if (!node.className == "")
-            console.log("Attribute className " + "'"+ node.className +"'" + " was removed from " + target.nodeName);
-          else if (!node.innerText == "")
-            console.log("Attribute Text " + "'"+ node.innerText +"'" + " was removed from " + target.nodeName);
-          else
-            console.log("Node " + node.nodeName + " removed from " + target.nodeName);
-          });
-        break;
-        case "characterData":
-          console.log("Content of " + target.nodeName + " changed from the node '" + mutation.oldValue + "' to '" + target.data + "'");
-        break;
-      }
-    });
-  });
-  // Register the target node to observe and specify which DOM changes to watch
-  observer.observe(document, {
-    childList : true,
-    attributes : true,
-    characterData : true,
-    subtree : true,
-    attributeOldValue : true,
-    characterDataOldValue : true
-  });
-}
+        var observer = new DOMObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                var target = mutation.target;
+                switch (mutation.type) {
+                    case "attributes":
+                        console.log("The attribute " + mutation.attributeName
+                        + " of the node " + target.nodeName
+                        + " changed from '" + mutation.oldValue + "'"
+                        + " to '" + target.getAttribute(mutation.attributeName) + "'");
+                        break;
+                    case "childList":
+                        Array.prototype.forEach.call(mutation.addedNodes, function (node) {
+                            if (!node.id == "")
+                                console.log("Attribute ID " + "'" + node.id + "'" + " was added to " + target.nodeName);
+                            else if (!node.className == "")
+                                console.log("Attribute className " + "'" + node.className + "'" + " was added to " + target.nodeName);
+                            else if (!node.innerText == "")
+                                console.log("Attribute Text " + "'" + node.innerText + "'" + " was added to " + target.nodeName);
+                            else
+                                console.log("Node " + node.nodeName + " was added to " + target.nodeName);
+                        });
+                        Array.prototype.forEach.call(mutation.removedNodes, function (node) {
+                            if (!node.id == "")
+                                console.log("Attribute ID " + "'" + node.id + "'" + " was removed from " + target.nodeName);
+                            else if (!node.className == "")
+                                console.log("Attribute className " + "'" + node.className + "'" + " was removed from " + target.nodeName);
+                            else if (!node.innerText == "")
+                                console.log("Attribute Text " + "'" + node.innerText + "'" + " was removed from " + target.nodeName);
+                            else
+                                console.log("Node " + node.nodeName + " removed from " + target.nodeName);
+                        });
+                        break;
+                    case "characterData":
+                        console.log("Content of " + target.nodeName + " changed from the node '" + mutation.oldValue + "' to '" + target.data + "'");
+                        break;
+                }
+                window.logEvents;
+            });
+        });
+        // Register the target node to observe and specify which DOM changes to watch
+        observer.observe(document, {
+            childList: true,
+            attributes: true,
+            characterData: true,
+            subtree: true,
+            attributeOldValue: true,
+            characterDataOldValue: true
+        });
 
+        //to return browser console logs to the user
+        (function() {
+            if (window.logEvents) return;
 
+            function captureUnhandled(errorMsg, url, lineNumber, column, errorObj) {
+                var logMessage = new Date() + ' unhandled - ' + errorMsg + ', ' + errorObj.stack;
+                window.logEvents.push(logMessage);
+            }
 
+            function capture(level) {
+                return function() {
+                    var args = Array.prototype.slice.call(arguments, 0);
+                    var logMessage = new Date() + ' ' + level + ' - ';
+                    for(var i=0; i<args.length; i++) {
+                        if (args[i] instanceof Error) {
+                            logMessage += args[i].message + ', ' + args[i].stack;
+                        } else {
+                            logMessage += args[i];
+                        }
+                    }
+                    window.logEvents.push(logMessage);
+                }
+            }
+            console = console || {};
+           // console.warn = capture('warn');
+          //  console.error = capture('error');
+            console.log = capture('log');
+            window.onerror = captureUnhandled;
+            window.logEvents = [];
+        }());
+    }
 </script>
 </html>

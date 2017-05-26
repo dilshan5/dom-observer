@@ -39,15 +39,14 @@ if (typeof WeakMap === "undefined") {
     return;
   }
   var registrationsTable = new WeakMap();
-  var setImmediate;
-  if (/Trident|Edge/.test(navigator.userAgent)) {
-    setImmediate = setTimeout;
-  } else if (window.setImmediate) {
-    setImmediate = window.setImmediate;
-  } else {
+  // We use setImmediate or postMessage for our future callback.
+  var setImmediate = window.SetImmediate;
+
+  // Use post message to emulate setImmediate.
+  if (!setImmediate) {
     var setImmediateQueue = [];
     var sentinel = String(Math.random());
-    window.addEventListener("message", function(e) {
+    window.addEventListener('message', function(e) {
       if (e.data === sentinel) {
         var queue = setImmediateQueue;
         setImmediateQueue = [];
@@ -58,7 +57,7 @@ if (typeof WeakMap === "undefined") {
     });
     setImmediate = function(func) {
       setImmediateQueue.push(func);
-      window.postMessage(sentinel, "*");
+      window.postMessage(sentinel, '*');
     };
   }
     // This is used to ensure that we never schedule 2 callas to setImmediate
